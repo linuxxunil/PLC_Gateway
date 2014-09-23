@@ -25,7 +25,14 @@
 
 #define _MODBUS_TCP_CHECKSUM_LENGTH    0
 
+typedef enum _SOCKET_TYPE {
+	UNIX_SOCKET,
+	SOCKET
+} SOCKET_TYPE;
+
 typedef struct _modbus_tcp {
+	SOCKET_TYPE type;
+	char sock_path[128];
     /* TCP port */
     int port;
     /* IP address */

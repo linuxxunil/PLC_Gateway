@@ -638,6 +638,7 @@ static int response_exception(modbus_t *ctx, sft_t *sft,
    If an error occurs, this function construct the response
    accordingly.
 */
+// by jesse : the function for server
 int modbus_reply(modbus_t *ctx, const uint8_t *req,
                  int req_length, modbus_mapping_t *mb_mapping)
 {
@@ -682,6 +683,15 @@ int modbus_reply(modbus_t *ctx, const uint8_t *req,
         } else {
             rsp_length = ctx->backend->build_response_basis(&sft, rsp);
             rsp[rsp_length++] = (nb / 8) + ((nb % 8) ? 1 : 0);
+			// by jesse 
+				if ( ctx->cb != NULL && 
+							ctx->cb->read_coils_cb != NULL ) {
+					ctx->cb->read_coils_cb(ctx, 
+						_FC_READ_COILS, address, nb,
+							mb_mapping->tab_bits);
+				}
+			// end
+			
             rsp_length = response_io_status(address, nb,
                                             mb_mapping->tab_bits,
                                             rsp, rsp_length);
@@ -794,13 +804,23 @@ int modbus_reply(modbus_t *ctx, const uint8_t *req,
             rsp_length = response_exception(
                 ctx, &sft,
                 MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS, rsp);
-        } else {
+		} else {
+			int reg_addr = (req[offset + 1] << 8) + req[offset + 2];
             int data = (req[offset + 3] << 8) + req[offset + 4];
 
             if (data == 0xFF00 || data == 0x0) {
                 mb_mapping->tab_bits[address] = (data) ? ON : OFF;
                 memcpy(rsp, req, req_length);
                 rsp_length = req_length;
+				// by jesse
+				if ( ctx->cb != NULL && 
+							ctx->cb->write_signal_coils_cb != NULL ) {
+					ctx->cb->write_signal_coils_cb(ctx, 
+					_FC_WRITE_SINGLE_COIL,reg_addr,(data) ? ON : OFF);
+				}
+				// end
+				
+				
             } else {
                 if (ctx->debug) {
                     fprintf(stderr,
@@ -1011,6 +1031,7 @@ int modbus_reply_exception(modbus_t *ctx, const uint8_t *req,
 }
 
 /* Reads IO status */
+//by jesse : the function for client
 static int read_io_status(modbus_t *ctx, int function,
                           int addr, int nb, uint8_t *dest)
 {
@@ -1056,6 +1077,7 @@ static int read_io_status(modbus_t *ctx, int function,
 
 /* Reads the boolean status of bits and sets the array elements
    in the destination to TRUE or FALSE (single bits). */
+ //by jesse : the function for client
 int modbus_read_bits(modbus_t *ctx, int addr, int nb, uint8_t *dest)
 {
     int rc;
@@ -1538,6 +1560,20 @@ void modbus_set_debug(modbus_t *ctx, int boolean)
 {
     ctx->debug = boolean;
 }
+
+/* by jesse */
+void modbus_init_cb(modbus_t *ctx, modbus_cb_t *cb)
+{
+    ctx->cb = cb;
+	cb->init_cb(ctx);
+}
+
+void modbus_uninit_cb(modbus_t *ctx, modbus_cb_t *cb)
+{
+    ctx->cb = NULL;
+	cb->uninit_cb(ctx);
+}
+/* end */
 
 /* Allocates 4 arrays to store bits, input bits, registers and inputs
    registers. The pointers are stored in modbus_mapping structure.

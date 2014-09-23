@@ -124,12 +124,23 @@ extern const unsigned int libmodbus_version_micro;
 
 typedef struct _modbus modbus_t;
 
+// by jesse
+typedef struct _modbus_cb_t {
+	int (*init_cb)(modbus_t *ctx);
+	int (*uninit_cb)(modbus_t *ctx);
+	int (*read_coils_cb)(modbus_t *ctx, const uint8_t function, const int start_addr,const int number, uint8_t *reg);
+	int (*write_signal_coils_cb)(modbus_t *ctx,uint8_t function, uint16_t reg, uint16_t value);
+} modbus_cb_t;
+// end
+
+
+// by jesse : the structure provide read buffer
 typedef struct {
     int nb_bits;
     int nb_input_bits;
     int nb_input_registers;
     int nb_registers;
-    uint8_t *tab_bits;
+    uint8_t *tab_bits;	// by jesse : for read coil
     uint8_t *tab_input_bits;
     uint16_t *tab_input_registers;
     uint16_t *tab_registers;
@@ -162,6 +173,8 @@ void modbus_free(modbus_t *ctx);
 
 int modbus_flush(modbus_t *ctx);
 void modbus_set_debug(modbus_t *ctx, int boolean);
+/* by jesse */
+void modbus_init_cb(modbus_t *ctx, modbus_cb_t *cb);
 
 const char *modbus_strerror(int errnum);
 

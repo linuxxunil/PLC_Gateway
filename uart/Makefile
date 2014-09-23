@@ -8,8 +8,7 @@ OBJS = status.o uart.o
 TARGET = uart_test
 
 CFLAG = -std=c99
-
-INC = COMMON_DIR
+INC = -I $(COMMON_DIR)
 
 # Compiler
 all: $(OBJS)

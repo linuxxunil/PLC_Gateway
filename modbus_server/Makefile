@@ -16,7 +16,7 @@ CLIENT = modbus_client
 SERVER = modbus_server
 TARGET = $(CLINET) $(SERVER)
 
-all: libmodbus $(SERVER_OBJS)
+all: $(SERVER_OBJS)
 	$(CC) $(CFLAGS) modbus-client.c -o $(CLIENT) $(LDFLAGS)
 	$(CC) $(CFLAGS) $(SERVER_OBJS) modbus-server.c -o $(SERVER) $(LDFLAGS)
 

@@ -77,6 +77,8 @@ typedef struct _sft {
     int t_id;
 } sft_t;
 
+
+
 typedef struct _modbus_backend {
     unsigned int backend_type;
     unsigned int header_length;
@@ -99,6 +101,7 @@ typedef struct _modbus_backend {
     int (*flush) (modbus_t *ctx);
     int (*select) (modbus_t *ctx, fd_set *rfds, struct timeval *tv, int msg_length);
     int (*filter_request) (modbus_t *ctx, int slave);
+	
 } modbus_backend_t;
 
 struct _modbus {
@@ -111,6 +114,9 @@ struct _modbus {
     struct timeval response_timeout;
     struct timeval byte_timeout;
     const modbus_backend_t *backend;
+	// by jesse
+	modbus_cb_t *cb;
+	// end
     void *backend_data;
 };
 

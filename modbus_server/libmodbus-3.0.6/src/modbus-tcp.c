@@ -51,6 +51,12 @@
 # include <arpa/inet.h>
 # include <poll.h>
 # include <netdb.h>
+// by jesse
+#include <sys/un.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <fcntl.h>
+// end
 #endif
 
 #if !defined(MSG_NOSIGNAL)
@@ -241,8 +247,9 @@ static int _modbus_tcp_set_ipv4_options(int s)
 /* Establishes a modbus TCP connection with a Modbus server. */
 static int _modbus_tcp_connect(modbus_t *ctx)
 {
-    int rc;
+    int rc,len;
     struct sockaddr_in addr;
+	struct sockaddr_un un_addr;
     modbus_tcp_t *ctx_tcp = ctx->backend_data;
 
 #ifdef OS_WIN32
@@ -251,26 +258,49 @@ static int _modbus_tcp_connect(modbus_t *ctx)
     }
 #endif
 
-    ctx->s = socket(PF_INET, SOCK_STREAM, 0);
-    if (ctx->s == -1) {
-        return -1;
-    }
-
-    rc = _modbus_tcp_set_ipv4_options(ctx->s);
-    if (rc == -1) {
-        close(ctx->s);
-        return -1;
-    }
-
+	// by jesse
+	if ( ctx_tcp->type == UNIX_SOCKET ) {
+		ctx->s = socket(AF_UNIX, SOCK_STREAM, 0);
+		if (ctx->s == -1) {
+			return -1;
+		}
+	} // end
+	else {
+		ctx->s = socket(PF_INET, SOCK_STREAM, 0);
+		if (ctx->s == -1) {
+			return -1;
+		}
+		rc = _modbus_tcp_set_ipv4_options(ctx->s);
+		if (rc == -1) {
+			close(ctx->s);
+			return -1;
+		}
+	}
+	
+	
     if (ctx->debug) {
-        printf("Connecting to %s\n", ctx_tcp->ip);
+		 if(ctx_tcp->type == UNIX_SOCKET)
+			printf("Connecting to %s\n", ctx_tcp->sock_path);
+		 else
+			printf("Connecting to %s\n", ctx_tcp->ip);
     }
 
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(ctx_tcp->port);
-    addr.sin_addr.s_addr = inet_addr(ctx_tcp->ip);
-    rc = connect(ctx->s, (struct sockaddr *)&addr,
+	
+	if ( ctx_tcp->type == UNIX_SOCKET ) {
+	    un_addr.sun_family = AF_UNIX;
+		strcpy(un_addr.sun_path, ctx_tcp->sock_path);
+		len = sizeof(un_addr.sun_family) + strlen(un_addr.sun_path);
+		rc = connect(ctx->s, (struct sockaddr *)&un_addr,len);				 
+		
+	} else {
+		addr.sin_family = AF_INET;
+		addr.sin_port = htons(ctx_tcp->port);
+		addr.sin_addr.s_addr = inet_addr(ctx_tcp->ip);
+		rc = connect(ctx->s, (struct sockaddr *)&addr,
                  sizeof(struct sockaddr_in));
+	}
+	
+    
     if (rc == -1) {
         close(ctx->s);
         return -1;
@@ -278,6 +308,8 @@ static int _modbus_tcp_connect(modbus_t *ctx)
 
     return 0;
 }
+
+
 
 /* Establishes a modbus TCP PI connection with a Modbus server. */
 static int _modbus_tcp_pi_connect(modbus_t *ctx)
@@ -427,6 +459,49 @@ int modbus_tcp_listen(modbus_t *ctx, int nb_connection)
     return new_socket;
 }
 
+
+// by jesse
+int modbus_unix_tcp_listen(modbus_t *ctx, int nb_connection)
+{
+    int new_socket;
+    int yes;
+    struct sockaddr_un addr;
+	socklen_t sock_len;
+    modbus_tcp_t *ctx_tcp = ctx->backend_data;
+
+    new_socket = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (new_socket == -1) {
+        return -1;
+    }
+
+    yes = 1;
+    if (setsockopt(new_socket, SOL_SOCKET, SO_REUSEADDR,
+                   (char *) &yes, sizeof(yes)) == -1) {
+        close(new_socket);
+        return -1;
+    }	
+
+    memset(&addr, 0, sizeof(addr));
+	
+    addr.sun_family = AF_UNIX;
+	strcpy(addr.sun_path, ctx_tcp->sock_path);
+	sock_len = sizeof(addr.sun_family) + strlen(addr.sun_path);
+	unlink(ctx_tcp->sock_path);
+	
+    if (bind(new_socket, (struct sockaddr *)&addr, sock_len) == -1) {
+        close(new_socket);
+        return -1;
+    }
+
+    if (listen(new_socket, nb_connection) == -1) {
+        close(new_socket);
+        return -1;
+    }
+
+    return new_socket;
+}
+// end
+
 int modbus_tcp_pi_listen(modbus_t *ctx, int nb_connection)
 {
     int rc;
@@ -541,6 +616,31 @@ int modbus_tcp_accept(modbus_t *ctx, int *socket)
 
     return ctx->s;
 }
+
+// by jesse
+int modbus_unix_tcp_accept(modbus_t *ctx, int *socket)
+{
+    struct sockaddr_un addr;
+    socklen_t addrlen;
+
+    addrlen = sizeof(addr);
+    ctx->s = accept(*socket, (struct sockaddr *)&addr, &addrlen);
+    if (ctx->s == -1) {
+        close(*socket);
+        *socket = 0;
+        return -1;
+    }
+
+    if (ctx->debug) {
+        printf("The client connection is accepted\n");
+    }
+
+    return ctx->s;
+}
+
+// end
+
+
 
 int modbus_tcp_pi_accept(modbus_t *ctx, int *socket)
 {
@@ -664,6 +764,9 @@ modbus_t* modbus_new_tcp(const char *ip, int port)
     ctx->backend_data = (modbus_tcp_t *) malloc(sizeof(modbus_tcp_t));
     ctx_tcp = (modbus_tcp_t *)ctx->backend_data;
 
+	// by jesse
+	ctx_tcp->type = SOCKET;
+	// end
     dest_size = sizeof(char) * 16;
     ret_size = strlcpy(ctx_tcp->ip, ip, dest_size);
     if (ret_size == 0) {
@@ -684,6 +787,60 @@ modbus_t* modbus_new_tcp(const char *ip, int port)
 
     return ctx;
 }
+
+// by jesse
+modbus_t* modbus_new_unix_tcp(const char *sock_path)
+{
+    modbus_t *ctx;
+    modbus_tcp_t *ctx_tcp;
+    size_t dest_size;
+    size_t ret_size;
+
+#if defined(OS_BSD)
+    /* MSG_NOSIGNAL is unsupported on *BSD so we install an ignore
+       handler for SIGPIPE. */
+    struct sigaction sa;
+
+    sa.sa_handler = SIG_IGN;
+    if (sigaction(SIGPIPE, &sa, NULL) < 0) {
+        /* The debug flag can't be set here... */
+        fprintf(stderr, "Coud not install SIGPIPE handler.\n");
+        return NULL;
+    }
+#endif
+
+    ctx = (modbus_t *) malloc(sizeof(modbus_t));
+    _modbus_init_common(ctx);
+
+    /* Could be changed after to reach a remote serial Modbus device */
+    ctx->slave = MODBUS_TCP_SLAVE;
+
+    ctx->backend = &(_modbus_tcp_backend);
+
+    ctx->backend_data = (modbus_tcp_t *) malloc(sizeof(modbus_tcp_t));
+    ctx_tcp = (modbus_tcp_t *)ctx->backend_data;
+
+	ctx_tcp->type = UNIX_SOCKET;
+    dest_size = (size_t)strlen(sock_path)+1;
+	
+	if ( dest_size <= 0 ) {
+		fprintf(stderr, "The sock path string has been truncated\n");
+        modbus_free(ctx);
+        errno = EINVAL;
+        return NULL;
+	}
+	
+    ret_size = strlcpy(ctx_tcp->sock_path, sock_path, dest_size);
+    if (ret_size == 0) {
+        fprintf(stderr, "The socket path string is empty\n");
+        modbus_free(ctx);
+        errno = EINVAL;
+        return NULL;
+    }
+	
+    return ctx;
+}
+// end
 
 
 modbus_t* modbus_new_tcp_pi(const char *node, const char *service)

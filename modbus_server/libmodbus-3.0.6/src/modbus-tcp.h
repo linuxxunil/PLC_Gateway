@@ -48,6 +48,13 @@ modbus_t* modbus_new_tcp_pi(const char *node, const char *service);
 int modbus_tcp_pi_listen(modbus_t *ctx, int nb_connection);
 int modbus_tcp_pi_accept(modbus_t *ctx, int *socket);
 
+
+modbus_t* modbus_new_unix_tcp(const char *sock_path);
+int modbus_unix_tcp_listen(modbus_t *ctx, int nb_connection);
+int modbus_unix_tcp_accept(modbus_t *ctx, int *socket);
+
+
+
 MODBUS_END_DECLS
 
 #endif /* _MODBUS_TCP_H_ */
