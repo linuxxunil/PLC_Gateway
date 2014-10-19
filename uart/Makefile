@@ -3,7 +3,7 @@ include ../Makefile.inc
 
 # Object link
 
-OBJS = status.o uart.o
+OBJS = $(COMMON_DIR)/status.o uart.o
 
 TARGET = uart_test
 
@@ -12,7 +12,7 @@ INC = -I $(COMMON_DIR)
 
 # Compiler
 all: $(OBJS)
-	$(CC) main.c $(CFLAGS) $(OBJS) -I .$(INC) -o $(TARGET)
+	$(CC) main.c $(CFLAGS) $(OBJS) $(INC) -o $(TARGET)
 	
 %: %.o
 	$(CC) -o $@ $^

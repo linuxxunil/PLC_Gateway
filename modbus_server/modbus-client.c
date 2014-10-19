@@ -8,13 +8,14 @@
 #include "modbus-tcp.h"
 #include "unit-test.h"
 
+
 void test_function(modbus_t *ctx, int i, uint8_t *tab_rp_bits)
 {
 	int rc;
 	switch (i) {
 	case 0:
 			/* Unit Test */
-		rc = modbus_write_bit(ctx, UT_BITS_ADDRESS, OFF);
+		rc = modbus_write_bit(ctx, UT_BITS_ADDRESS, ON);
 		printf("1/2 modbus_write_bit: ");
 		if (rc == 1) {
 			printf("OK\n");
