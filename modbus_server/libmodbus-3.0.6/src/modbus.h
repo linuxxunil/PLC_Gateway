@@ -129,7 +129,8 @@ typedef struct _modbus_cb_t {
 	int (*init_cb)(modbus_t *ctx);
 	int (*uninit_cb)(modbus_t *ctx);
 	int (*read_coils_cb)(modbus_t *ctx, const uint8_t function, const int start_addr,const int number, uint8_t *reg);
-	int (*write_signal_coils_cb)(modbus_t *ctx,uint8_t function, uint16_t reg, uint16_t value);
+	int (*read_discrete_input_cb)(modbus_t *ctx, const uint8_t function, const int start_addr,const int number, uint8_t *reg);
+	int (*write_signal_coil_cb)(modbus_t *ctx,uint8_t function, uint16_t reg, uint16_t value);
 } modbus_cb_t;
 // end
 
@@ -141,7 +142,7 @@ typedef struct {
     int nb_input_registers;
     int nb_registers;
     uint8_t *tab_bits;	// by jesse : for read coil
-    uint8_t *tab_input_bits;
+    uint8_t *tab_input_bits;	// by jesse : for read_discrete_input_cb
     uint16_t *tab_input_registers;
     uint16_t *tab_registers;
 } modbus_mapping_t;

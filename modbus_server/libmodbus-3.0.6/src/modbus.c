@@ -723,6 +723,16 @@ int modbus_reply(modbus_t *ctx, const uint8_t *req,
         } else {
             rsp_length = ctx->backend->build_response_basis(&sft, rsp);
             rsp[rsp_length++] = (nb / 8) + ((nb % 8) ? 1 : 0);
+			
+			// by jesse 
+				if ( ctx->cb != NULL && 
+							ctx->cb->read_coils_cb != NULL ) {
+					ctx->cb->read_coils_cb(ctx, 
+						_FC_READ_DISCRETE_INPUTS, address, nb,
+							mb_mapping->tab_input_bits);
+				}
+			// end
+			
             rsp_length = response_io_status(address, nb,
                                             mb_mapping->tab_input_bits,
                                             rsp, rsp_length);
@@ -814,8 +824,8 @@ int modbus_reply(modbus_t *ctx, const uint8_t *req,
                 rsp_length = req_length;
 				// by jesse
 				if ( ctx->cb != NULL && 
-							ctx->cb->write_signal_coils_cb != NULL ) {
-					ctx->cb->write_signal_coils_cb(ctx, 
+							ctx->cb->write_signal_coil_cb != NULL ) {
+					ctx->cb->write_signal_coil_cb(ctx, 
 					_FC_WRITE_SINGLE_COIL,reg_addr,(data) ? ON : OFF);
 				}
 				// end

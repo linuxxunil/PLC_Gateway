@@ -21,8 +21,35 @@ int uninit_cb(modbus_t *ctx)
 	uninitDI();
 }
 
-
+/**
+ * Function   : 0x01
+ * Description: Read coil ( Read DO Value)
+ */
 int read_coils_cb(modbus_t *ctx, const uint8_t function, const int start_addr,
+						const int number, uint8_t *reg)
+{
+	int i;
+	int index = start_addr;
+	int table[] = {DO_01, DO_02};
+	
+	for (i=0; i<number; i++){
+		switch (getDO(table[i])){
+		case DIO_ON:	
+			reg[index++] = 1;
+		break;
+		case DIO_OFF:
+			reg[index++] = 0;
+		break;
+		}
+	}
+	return 0;
+}
+
+/**
+ * Function   : 0x02
+ * Description: Read coil ( Read DO Value)
+ */
+int read_discrete_input_cb(modbus_t *ctx, const uint8_t function, const int start_addr,
 						const int number, uint8_t *reg)
 {
 	int i;
@@ -42,7 +69,11 @@ int read_coils_cb(modbus_t *ctx, const uint8_t function, const int start_addr,
 	return 0;
 }
 
-int write_signal_coils_cb(modbus_t *ctx,uint8_t function, uint16_t reg, uint16_t value)
+/** 
+ *  Function  : 0x05
+ *  Descrpiton: write coils (write DO)
+ */
+int write_signal_coil_cb(modbus_t *ctx,uint8_t function, uint16_t reg, uint16_t value)
 {
 	DO		out;
 	switch ( reg ) {
@@ -60,5 +91,6 @@ modbus_cb_t cb = {
 	init_cb,
 	uninit_cb,
 	read_coils_cb,
-	write_signal_coils_cb
+	&read_discrete_input_cb,
+	write_signal_coil_cb
 };

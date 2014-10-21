@@ -35,8 +35,12 @@ void uninitDO();
 void initDI();
 void uninitDI();
 
+// Get DI Status
 DIO_VAL getDI(DI index);
+
+// Set/Get DO Status
 void setDO(DO index,DIO_VAL val);
+DIO_VAL getDO(DO index);
 
 
 #endif

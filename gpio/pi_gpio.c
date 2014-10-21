@@ -44,6 +44,14 @@ void setDO(DO index,DIO_VAL val)
 	setGpioValue(index, val);
 }
 
+DIO_VAL getDO(DO index) 
+{
+	static GPIO_VALUE val = 0;
+	getGpioValue(index,&val);
+	return (DIO_VAL)val;
+}
+
+
 /*
 int main(int argv,char *argc[])
 {
