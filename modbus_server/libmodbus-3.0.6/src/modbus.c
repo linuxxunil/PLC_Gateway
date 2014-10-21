@@ -726,8 +726,8 @@ int modbus_reply(modbus_t *ctx, const uint8_t *req,
 			
 			// by jesse 
 				if ( ctx->cb != NULL && 
-							ctx->cb->read_coils_cb != NULL ) {
-					ctx->cb->read_coils_cb(ctx, 
+							ctx->cb->read_discrete_input_cb != NULL ) {
+					ctx->cb->read_discrete_input_cb(ctx, 
 						_FC_READ_DISCRETE_INPUTS, address, nb,
 							mb_mapping->tab_input_bits);
 				}
