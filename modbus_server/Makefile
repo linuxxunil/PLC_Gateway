@@ -3,13 +3,13 @@ SRC_DIR=/usr/local
 LIB_MODBUS = libmodbus-3.0.6
 
 # COMPILER OBJECTS
-SERVER_OBJS = user_callback.o $(GPIO_OBJS) $(COMMON_OBJS)
+SERVER_OBJS = user_callback.o $(DIO_OBJS) $(COMMON_OBJS) $(AIO_OBJS)
 
 # debug 
 DBG = -O3
 
 # FLAG
-CFLAGS +=  -I $(SRC_DIR)/include/modbus -I $(GPIO_DIR)
+CFLAGS +=  -I $(SRC_DIR)/include/modbus -I $(GPIO_DIR) -I $(I2C_DIR)
 LDFLAGS = -L $(SRC_DIR)/lib -lmodbus -g
 
 CLIENT = modbus_client

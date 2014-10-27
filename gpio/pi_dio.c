@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "pi_gpio.h"
+#include "pi_dio.h"
 
 void initDO()
 {

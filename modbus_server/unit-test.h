@@ -55,8 +55,8 @@ const uint16_t UT_REGISTERS_TAB[] = { 0x022B, 0x0001, 0x0064 };
    UT_REGISTERS_NB_POINTS to try to raise a segfault. */
 const uint16_t UT_REGISTERS_NB_SPECIAL = 0x2;
 
-const uint16_t UT_INPUT_REGISTERS_ADDRESS = 0x08;
-const uint16_t UT_INPUT_REGISTERS_NB = 0x1;
+const uint16_t UT_INPUT_REGISTERS_ADDRESS = 0x01; 	// address start for read input register
+const uint16_t UT_INPUT_REGISTERS_NB = 0x01;		// address number for read input register
 const uint16_t UT_INPUT_REGISTERS_TAB[] = { 0x000A };
 
 const float UT_REAL = 916.540649;

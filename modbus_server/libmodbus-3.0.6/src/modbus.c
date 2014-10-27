@@ -795,8 +795,15 @@ int modbus_reply(modbus_t *ctx, const uint8_t *req,
                 MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS, rsp);
         } else {
             int i;
-
             rsp_length = ctx->backend->build_response_basis(&sft, rsp);
+			// by jesse 
+				if ( ctx->cb != NULL && 
+							ctx->cb->read_input_register_cb != NULL ) {
+					ctx->cb->read_input_register_cb(ctx, 
+						_FC_READ_INPUT_REGISTERS, address, nb,
+							mb_mapping->tab_input_registers);
+				}
+			// end
             rsp[rsp_length++] = nb << 1;
             for (i = address; i < address + nb; i++) {
                 rsp[rsp_length++] = mb_mapping->tab_input_registers[i] >> 8;

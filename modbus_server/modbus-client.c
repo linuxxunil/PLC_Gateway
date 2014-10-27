@@ -9,17 +9,17 @@
 #include "unit-test.h"
 
 
-void test_function(modbus_t *ctx, int i, uint8_t *tab_rp_bits)
+void test_function(modbus_t *ctx, int i, uint8_t *tab_rp_bits, uint16_t *tab_rp_registers)
 {
 	static uint8_t value;
 	static int rc, nb_points;
 
 	switch (i) {
-	case 0:	// test : write singal coil
-			/* Unit Test */
+	case 0:	// test : write singal coil (DO)
+		printf("[0] Test: write_signal_coil(%d)\n",value);
 		value = OFF;
 		rc = modbus_write_bit(ctx, UT_BITS_ADDRESS, value);
-		printf("[0] Test: write_signal_coil(%d)\n",value);
+		
 		if (rc == 1) {
 			printf("[0] OK\n");
 		} else {
@@ -27,9 +27,10 @@ void test_function(modbus_t *ctx, int i, uint8_t *tab_rp_bits)
 		}
 		
 	break;	
-	case 1: // test : read coil
-		rc = modbus_read_bits(ctx, UT_BITS_ADDRESS, 1, tab_rp_bits);
+	case 1: // test : read coil (DO)
 		printf("[1] Test: Read_coil\n");
+		rc = modbus_read_bits(ctx, UT_BITS_ADDRESS, 1, tab_rp_bits);
+		
 		if (rc != 1) {
 			printf("[1] FAILED (nb points %d)\n", rc);
 		} else {
@@ -46,11 +47,12 @@ void test_function(modbus_t *ctx, int i, uint8_t *tab_rp_bits)
 		}
 	break;
 	
-	case 2: // test : read inputs
+	case 2: // test : read inputs (DI)
 	    /** DISCRETE INPUTS **/
-		rc = modbus_read_input_bits(ctx, UT_INPUT_BITS_ADDRESS,
-									UT_INPUT_BITS_NB, tab_rp_bits);
 		printf("[2] Test: Read discrete inputs\n");
+		
+		rc = modbus_read_input_bits(ctx, UT_INPUT_BITS_ADDRESS,UT_INPUT_BITS_NB,tab_rp_bits);
+		
 
 		if (rc != UT_INPUT_BITS_NB) {
 			printf("[2] FAILED (nb points %d)\n", rc);
@@ -68,6 +70,14 @@ void test_function(modbus_t *ctx, int i, uint8_t *tab_rp_bits)
 		}
 		printf("[2] OK\n");
 	break;
+	case 3: // test : read input register(AI)
+		printf("[3] Test: Read Input Registers\n");
+		rc = modbus_read_input_registers(ctx, UT_INPUT_REGISTERS_ADDRESS,UT_INPUT_REGISTERS_NB , tab_rp_registers);
+		
+		printf("[3] Value = 0x%04x\n",tab_rp_registers[0]);
+		printf("[3] OK\n");
+		
+	break;
 	}
 
 }
@@ -84,6 +94,7 @@ int main(int argc, char*argv[])
 	int use_backend;
 	int test_index, i;
 	uint8_t *tab_rp_bits;
+	uint16_t *tab_rp_registers;
 	modbus_t *ctx;
 	
 	 if (argc > 1) {
@@ -123,9 +134,12 @@ int main(int argc, char*argv[])
 	/* Allocate and initialize the memory to store the bits */
     tab_rp_bits = (uint8_t *) malloc(UT_BITS_NB * sizeof(uint8_t));
     memset(tab_rp_bits, 0, UT_BITS_NB * sizeof(uint8_t));
+	
+    tab_rp_registers = (uint16_t *) malloc(UT_INPUT_REGISTERS_NB * sizeof(uint16_t));
+    memset(tab_rp_registers, 0, UT_INPUT_REGISTERS_NB * sizeof(uint16_t));
 
 	
-	test_index = 3;
+	test_index = 4;
 	for(i=0; i<test_index; i++) {
 		if (modbus_connect(ctx) == -1) {
 			fprintf(stderr, "Connection failed: %s\n",
@@ -134,7 +148,7 @@ int main(int argc, char*argv[])
 			return -1;
 		}
 	
-		test_function(ctx, i, tab_rp_bits);
+		test_function(ctx, i, tab_rp_bits, tab_rp_registers);
 		
 		modbus_close(ctx);
 	}
@@ -144,7 +158,7 @@ int main(int argc, char*argv[])
 close:
     /* Free the memory */
     free(tab_rp_bits);
-    //free(tab_rp_registers);
+    free(tab_rp_registers);
     modbus_free(ctx);
 
     return 0;

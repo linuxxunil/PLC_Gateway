@@ -1,5 +1,5 @@
-#ifndef _PI_GPIO_H_
-#define _PI_GPIO_H_
+#ifndef _PI_DIO_H_
+#define _PI_DIO_H_
 
 #include "gpio_api.h"
 
@@ -19,16 +19,6 @@ typedef enum _DI {
 	DI_02=GPIO22
 }DI;
 
-
-typedef enum _AO {
-	AO_01=GPIO23,
-	AO_02=GPIO24
-}AO;
-
-typedef enum _AI {
-	AI_01=GPIO25,
-	AI_02=GPIO04
-}AI;
 
 void initDO();
 void uninitDO();

@@ -116,8 +116,7 @@ int main(int argc, char*argv[])
     /* Examples from PI_MODBUS_300.pdf.
        Only the read-only input values are assigned. */
 
-    /** INPUT STATUS **/
-	
+    /** INPUT STATUS **/	
     modbus_set_bits_from_bytes(mb_mapping->tab_input_bits,
                                UT_INPUT_BITS_ADDRESS, UT_INPUT_BITS_NB,
                                UT_INPUT_BITS_TAB);

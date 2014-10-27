@@ -6,13 +6,15 @@
 
 
 #include "modbus.h"
-#include "pi_gpio.h"
+#include "pi_dio.h"
+#include "pi_aio.h"
 
 int init_cb(modbus_t *ctx)
 {
 	printf("init_cb\n");
 	initDO();
 	initDI();
+	initAI();
 }
 
 int uninit_cb(modbus_t *ctx)
@@ -69,6 +71,28 @@ int read_discrete_input_cb(modbus_t *ctx, const uint8_t function, const int star
 	return 0;
 }
 
+
+/** 
+ *  Function  : 0x04
+ *  Descrpiton: read input register (Read AI)
+ */
+ int read_input_register_cb(modbus_t *ctx, const uint8_t function, const int start_addr,
+						const int number, uint16_t *reg)
+{
+	int i;
+	int status = getAI(AI_01);
+	
+	for (i = start_addr; i < start_addr + number; i++) {
+		reg[i] = status;
+	}
+	//printf("0x%02x\n",status);
+	
+	//reg[0] = 0x2500;
+	//printf("%02x\n",reg[0]);
+	return 0;
+}
+
+
 /** 
  *  Function  : 0x05
  *  Descrpiton: write coils (write DO)
@@ -86,11 +110,15 @@ int write_signal_coil_cb(modbus_t *ctx,uint8_t function, uint16_t reg, uint16_t 
 	return 0;
 }
 
+
+
+
 // extern for modbus server
 modbus_cb_t cb = {
 	init_cb,
 	uninit_cb,
 	read_coils_cb,
-	&read_discrete_input_cb,
+	read_discrete_input_cb,
+	read_input_register_cb,
 	write_signal_coil_cb
 };

@@ -16,8 +16,10 @@ int debug(int status, char *file, int line);
 // uart_status
 #define ERR_BASE_UART(X)			-1000+X
 #define ERR_BASE_GPIO(X)			-2000+X
+#define ERR_BASE_I2C(X)				-3000+X
 // uart_status
-#define ERR_BASE_MODBUS_SERVER(X)	-3000+X
+#define ERR_BASE_MODBUS_SERVER(X)	-4000+X
+
 
 
 #endif

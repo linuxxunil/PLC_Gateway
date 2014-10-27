@@ -5,15 +5,18 @@ CFLAG 	= -std-c99
 
 # Object link
 OBJS	= $(COMMON_OBJS)
-OBJS 	+= gpio_api.o pi_dio.o 
+OBJS	+= $(I2C_DIR)/i2c-lib/i2cbusses.o
+OBJS	+= i2c_api.o pi_aio.o
 
-TARGET 	= gpio_test
+TARGET 	= i2c_test
 
 INC	= -I $(COMMON_DIR)
+INC	= -I $(I2C_DIR)/i2c-lib
 
 # Compiler
-all: $(OBJS) 
+all: $(OBJS)
 	$(CC) main.c $(CFLAGS) $(OBJS) $(INC) -o $(TARGET)
+	cp $(I2C_DIR)/i2c-lib/i2cbusses.o $(I2C_DIR)
 	
 %: %.o
 	$(CC) -o $@ $^
@@ -24,4 +27,4 @@ all: $(OBJS)
 	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
 
 clean:
-	rm -f $(TARGET) *.o *.bak *~
+	rm -f $(TARGET) $(OBJS) *.o  *.bak *~
