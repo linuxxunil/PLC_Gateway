@@ -8,9 +8,14 @@ typedef enum _AI {
 	AI_01=0x48,
 }AI;
 
+typedef enum _AO {
+	AO_01=0x48,
+}AO;
+
 void initAI();
 void initAO();
 
 int getAI(AI index) ;
+int setAI(AO index) ;
 
 #endif

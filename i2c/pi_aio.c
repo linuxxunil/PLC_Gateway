@@ -17,8 +17,17 @@ void initAO()
 int getAI(AI index) 
 {
 	unsigned char value;
-	int status = i2cReadByte(I2CBUS,index,1,&value);
+	int status = i2cReadByte(I2CBUS,index,0x01,&value);
 	return (status==SUCCESS)?value:status;
+}
+
+int setAO(AO index,unsigned char value)
+{
+	unsigned char CONTROL_DATA = 0x40;
+	unsigned char block[4];
+	block[0] = value;
+	int status = i2cWriteBytes(I2CBUS,index,CONTROL_DATA,block,1);
+	return (status==SUCCESS)?SUCCESS:status;
 }
 
 

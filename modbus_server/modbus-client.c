@@ -78,6 +78,22 @@ void test_function(modbus_t *ctx, int i, uint8_t *tab_rp_bits, uint16_t *tab_rp_
 		printf("[3] OK\n");
 		
 	break;
+	case 4: // test : Write input register (AO)
+		printf("[4] Test: Read Input Registers\n");
+		rc = modbus_write_register(ctx, UT_REGISTERS_ADDRESS, 0);
+		
+		printf("[4] Value = 0x%04x\n",tab_rp_registers[0]);
+		printf("[4] OK\n");
+		
+	break;
+	case 5: // test : Read Holding register (AO)
+		printf("[5] Test: Read Input Registers\n");
+		rc = modbus_read_registers(ctx, UT_REGISTERS_ADDRESS,
+											1, tab_rp_registers);
+		printf("[5] Value = 0x%04x\n",tab_rp_registers[0]);
+		printf("[5] OK\n");
+		
+	break;
 	}
 
 }
@@ -139,7 +155,7 @@ int main(int argc, char*argv[])
     memset(tab_rp_registers, 0, UT_INPUT_REGISTERS_NB * sizeof(uint16_t));
 
 	
-	test_index = 4;
+	test_index = 6;
 	for(i=0; i<test_index; i++) {
 		if (modbus_connect(ctx) == -1) {
 			fprintf(stderr, "Connection failed: %s\n",

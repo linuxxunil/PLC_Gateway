@@ -130,8 +130,10 @@ typedef struct _modbus_cb_t {
 	int (*uninit_cb)(modbus_t *ctx);
 	int (*read_coils_cb)(modbus_t *ctx, const uint8_t function, const int start_addr,const int number, uint8_t *reg);
 	int (*read_discrete_input_cb)(modbus_t *ctx, const uint8_t function, const int start_addr,const int number, uint8_t *reg);
+	int (*read_holding_register_cb)(modbus_t *ctx, const uint8_t function, const int start_addr,const int number, uint16_t *reg);
 	int (*read_input_register_cb)(modbus_t *ctx, const uint8_t function, const int start_addr,const int number, uint16_t *reg);
 	int (*write_signal_coil_cb)(modbus_t *ctx,uint8_t function, uint16_t reg, uint16_t value);
+	int (*write_signal_register_cb)(modbus_t *ctx,uint8_t function,uint16_t reg, uint16_t value);
 } modbus_cb_t;
 // end
 

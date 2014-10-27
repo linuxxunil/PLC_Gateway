@@ -761,8 +761,15 @@ int modbus_reply(modbus_t *ctx, const uint8_t *req,
                 MODBUS_EXCEPTION_ILLEGAL_DATA_ADDRESS, rsp);
         } else {
             int i;
-
-            rsp_length = ctx->backend->build_response_basis(&sft, rsp);
+			rsp_length = ctx->backend->build_response_basis(&sft, rsp);
+			// by jesse 
+			if ( ctx->cb != NULL && 
+							ctx->cb->read_holding_register_cb != NULL ) {
+					ctx->cb->read_holding_register_cb(ctx, 
+						_FC_READ_HOLDING_REGISTERS, address, nb,
+							mb_mapping->tab_input_registers);
+				}
+			// end
             rsp[rsp_length++] = nb << 1;
             for (i = address; i < address + nb; i++) {
                 rsp[rsp_length++] = mb_mapping->tab_registers[i] >> 8;
@@ -865,6 +872,14 @@ int modbus_reply(modbus_t *ctx, const uint8_t *req,
             mb_mapping->tab_registers[address] = data;
             memcpy(rsp, req, req_length);
             rsp_length = req_length;
+			
+			// by jesse
+			if ( ctx->cb != NULL && 
+						ctx->cb->write_signal_register_cb != NULL ) {
+				ctx->cb->write_signal_register_cb(ctx, 
+					_FC_WRITE_SINGLE_REGISTER, address, data);
+			}
+			// end
         }
         break;
     case _FC_WRITE_MULTIPLE_COILS: {

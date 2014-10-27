@@ -9,6 +9,7 @@
 #include "i2c_status.h"
 #include "status.h"
 
+#define I2C_SMBUS_BLOCK_MAX 32
 
 static int check_funcs(int file, int size, int daddress, int pec)
 {
@@ -160,19 +161,54 @@ int i2cReadWord(int i2cBus,int i2cAddr,int startDataAddr,unsigned int *word)
 	return (*word>=0)?SUCCESS:DEBUG(ERR_READ_I2C_FAILURE);
 	
 }
-/*
-int main()
-{
-	unsigned char byte;
-	unsigned int word;
-	initI2C();
-	
-	readByte(1,0x48,1,&byte);
-	readWord(1,0x48,1,&word);
-	
-	printf("0x%02x\n",byte);
-	printf("0x%04x\n",word);
 
-	return 0;
+
+
+int i2cWriteBytes(int i2cBus,int i2cAddr,int startDataAddr,unsigned char block[],int blockLen)
+{
+	int status,size;
+	int fd;
+	char filename[20];
+	char str[8];
+	int pec = 0;
+	
+	sprintf(str,"%d",i2cBus);
+	if (lookup_i2c_bus(str) < 0)
+		return DEBUG(ERR_BUS_NOT_FOUND);
+	
+	sprintf(str,"%d",i2cAddr);
+	if (parse_i2c_address(str) < 0)
+		return DEBUG(ERR_ADDR_NOT_FOUND);
+	
+	if (startDataAddr < 0 || startDataAddr > 0xff) 
+		return DEBUG(ERR_DATA_ADDR_NOT_FOUND);
+	
+	
+	switch(blockLen) {
+	case 0: size = I2C_SMBUS_BYTE;break;
+	case 1: size = I2C_SMBUS_BYTE_DATA; break;
+	default: size = I2C_SMBUS_I2C_BLOCK_DATA; break;
+	}
+
+	fd = open_i2c_dev(i2cBus, filename, sizeof(filename), 0);
+	if (fd < 0
+	 || check_funcs(fd, size, startDataAddr, pec)
+	 || set_slave_addr(fd, i2cAddr, 0)) {
+		close(fd);
+		return DEBUG(ERR_OPEN_I2C_DEV_FAILURE);
+	}
+	switch (size) {
+	case I2C_SMBUS_BYTE:
+		status = i2c_smbus_write_byte(fd, startDataAddr);
+	break;
+	case I2C_SMBUS_BYTE_DATA:
+		status = i2c_smbus_write_byte_data(fd, startDataAddr, block[0]);
+	break;
+	default:
+		status = i2c_smbus_write_i2c_block_data(fd, startDataAddr, blockLen, block);
+	break;
+	}
+	
+	close(fd);
+	return (status<0)?DEBUG(ERR_WRITE_I2C_FAILURE):SUCCESS;
 }
-*/

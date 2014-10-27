@@ -71,6 +71,16 @@ int read_discrete_input_cb(modbus_t *ctx, const uint8_t function, const int star
 	return 0;
 }
 
+/** 
+ *  Function  : 0x03
+ *  Descrpiton: Read holding registers (Read AO)
+ */
+int read_holding_register_cb(modbus_t *ctx, const uint8_t function, const int start_addr,
+					const int number, uint16_t *reg)
+{	
+	return 0;
+}
+
 
 /** 
  *  Function  : 0x04
@@ -110,6 +120,19 @@ int write_signal_coil_cb(modbus_t *ctx,uint8_t function, uint16_t reg, uint16_t 
 	return 0;
 }
 
+/** 
+ *  Function  : 0x06
+ *  Descrpiton: write single register (write AO)
+ */
+int write_signal_register_cb(modbus_t *ctx,uint8_t function, uint16_t reg, uint16_t value)
+{	
+	AI		in;
+	switch ( reg ) {
+	case 0x0001: in = AI_01; break;
+	}
+	return setAO(in, value);
+}
+
 
 
 
@@ -117,8 +140,10 @@ int write_signal_coil_cb(modbus_t *ctx,uint8_t function, uint16_t reg, uint16_t 
 modbus_cb_t cb = {
 	init_cb,
 	uninit_cb,
-	read_coils_cb,
-	read_discrete_input_cb,
-	read_input_register_cb,
-	write_signal_coil_cb
+	read_coils_cb,					//0x01
+	read_discrete_input_cb,			//0x02
+	read_holding_register_cb,		//0x03
+	read_input_register_cb,			//0x04
+	write_signal_coil_cb,			//0x05
+	write_signal_register_cb		//0x06
 };

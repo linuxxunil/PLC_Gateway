@@ -45,7 +45,7 @@ const uint16_t UT_INPUT_BITS_ADDRESS = 0x01;
 const uint16_t UT_INPUT_BITS_NB = 0x02;
 const uint8_t UT_INPUT_BITS_TAB[] = { 0xAC, 0xDB, 0x35 };
 
-const uint16_t UT_REGISTERS_ADDRESS = 0x6B;
+const uint16_t UT_REGISTERS_ADDRESS = 0x0001;
 /* Raise a manual exception when this adress is used for the first byte */
 const uint16_t UT_REGISTERS_ADDRESS_SPECIAL = 0x6C;
 const uint16_t UT_REGISTERS_NB = 0x3;
