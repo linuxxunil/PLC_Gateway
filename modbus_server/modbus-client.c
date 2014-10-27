@@ -79,7 +79,7 @@ void test_function(modbus_t *ctx, int i, uint8_t *tab_rp_bits, uint16_t *tab_rp_
 		
 	break;
 	case 4: // test : Write input register (AO)
-		printf("[4] Test: Read Input Registers\n");
+		printf("[4] Test: Write Input Register\n");
 		rc = modbus_write_register(ctx, UT_REGISTERS_ADDRESS, 0);
 		
 		printf("[4] Value = 0x%04x\n",tab_rp_registers[0]);
@@ -87,7 +87,7 @@ void test_function(modbus_t *ctx, int i, uint8_t *tab_rp_bits, uint16_t *tab_rp_
 		
 	break;
 	case 5: // test : Read Holding register (AO)
-		printf("[5] Test: Read Input Registers\n");
+		printf("[5] Test: Read Holding register\n");
 		rc = modbus_read_registers(ctx, UT_REGISTERS_ADDRESS,
 											1, tab_rp_registers);
 		printf("[5] Value = 0x%04x\n",tab_rp_registers[0]);
